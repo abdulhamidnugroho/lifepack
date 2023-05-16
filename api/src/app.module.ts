@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { ObatModule } from './obat/obat.module';
+import { ResepModule } from './resep/resep.module';
 import { ConfigModule } from '@nestjs/config';
 import { DbModule } from './db/db.module';
 import { getConfig } from './services/app-config/configuration';
@@ -20,6 +21,7 @@ import { GlobalModule } from './global/global.module';
     AppCacheModule,
     UserModule,
     ObatModule,
+    ResepModule,
     ConfigModule,
     LoggerModule,
   ],

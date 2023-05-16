@@ -80,7 +80,7 @@ describe('ObatService', () => {
 
     expect(await service.getAll()).toStrictEqual([mockObatEntity]);
     expect(repoSpy).toHaveBeenCalledWith({
-      select: ['name', 'sku', 'price', 'konfigurasi_harga_id', 'termasuk_pajak', 'stock'],
+      select: ['product_id', 'name', 'sku', 'price', 'konfigurasi_harga_id', 'termasuk_pajak', 'stock'],
     });
   });
 });

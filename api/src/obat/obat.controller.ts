@@ -58,8 +58,8 @@ export class ObatController {
       if (!value.termasuk_pajak) {
         value.price += ((11/100) * value.price)
       }
-
-  }
+    }
+    
     return {
       message: 'Obat retrieved successfully',
       obats,
