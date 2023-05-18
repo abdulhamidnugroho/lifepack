@@ -44,6 +44,7 @@ describe('ResepController', () => {
         nama_dokter: 'dokter-1',
         total_harga: 5000,
         status: 'created',
+        resep_details: []
       });
 
       expect(

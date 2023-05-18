@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ResepEntity } from '../entities/resep.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { CreateResepDto } from '../dto/create-resep.dto';
+import { async } from 'rxjs';
 
 @Injectable()
 export class ResepService {
@@ -10,7 +11,6 @@ export class ResepService {
     @InjectRepository(ResepEntity)
     private resepsRepository: Repository<ResepEntity>,
   ) {}
-
 
   async createResep(resepDto: CreateResepDto): Promise<ResepEntity> {
     const resepPayload = {
@@ -31,9 +31,34 @@ export class ResepService {
     return await this.resepsRepository.save(newResep);
   }
 
-  public getAll(): Promise<ResepEntity[]> {
-    return this.resepsRepository.find({
-      select: ['resep_id', 'nama_pasien', 'nama_klinik', 'nama_dokter', 'total_harga', 'status'],
+  async getAll(): Promise<ResepEntity[]> {
+    let reseps = await this.resepsRepository.find({
+      relations: {
+        resep_details: true,
+      },
     });
+
+    for (let resep_key in reseps) {
+      let resep = reseps[resep_key];
+      let total_price = 0;
+
+      for (let detail_key in resep.resep_details) {
+        let value = resep.resep_details[detail_key];
+        let configured_price = value.original_price;
+
+        if (value.konfigurasi_harga == 1) {
+          configured_price += ((1/10) * value.original_price)
+        }
+
+        value.final_price       = ((11/100) * configured_price) + configured_price;
+        value.total_harga_obat  = value.final_price * value.qty;
+
+        total_price += value.total_harga_obat;
+      }
+
+      resep.total_harga = total_price;
+    }
+
+    return reseps;
   }
 }

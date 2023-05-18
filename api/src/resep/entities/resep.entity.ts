@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm';
+import { ResepDetailEntity } from './resepdetail.entity';
 
 @Entity({
   name: 'reseps',
@@ -21,4 +22,9 @@ export class ResepEntity {
 
   @Column()
   status: string;
+  
+  @OneToMany(() => ResepDetailEntity, (resep_detail) => resep_detail.resep)
+  @JoinColumn({ name: "resep_id" })
+  resep_details: ResepDetailEntity[];
 }
+
