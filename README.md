@@ -62,13 +62,6 @@ API docs are generated with the start of app server automatically and available 
 - Docker for Desktop
 - Node.js LTS
 
-### Getting started
-
-- Clone the repository 
-```console
-git clone https://github.com/rodion-arr/nestjs-starter-kit.git
-```
-
 - Run docker containers (DB, Redis, etc)
 
 ```console
