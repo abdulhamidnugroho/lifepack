@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ResepEntity } from '../entities/resep.entity';
-import { Repository, DataSource } from 'typeorm';
+import { ObatEntity } from '../../obat/entities/obat.entity';
+import { Repository } from 'typeorm';
 import { CreateResepDto } from '../dto/create-resep.dto';
-import { async } from 'rxjs';
 
 @Injectable()
 export class ResepService {
   constructor(
     @InjectRepository(ResepEntity)
     private resepsRepository: Repository<ResepEntity>,
+    private obatsRepository: Repository<ObatEntity>,
   ) {}
 
   async createResep(resepDto: CreateResepDto): Promise<ResepEntity> {
@@ -29,6 +30,17 @@ export class ResepService {
 
   async updateResep(newResep: ResepEntity): Promise<ResepEntity> {
     return await this.resepsRepository.save(newResep);
+  }
+
+  async getResep(resep_id: number): Promise<ResepEntity> {
+    return this.resepsRepository.findOneOrFail({
+      where: {
+        resep_id: resep_id,
+      },
+      relations: {
+        resep_details: true,
+      }
+  });
   }
 
   async getAll(): Promise<ResepEntity[]> {
@@ -60,5 +72,63 @@ export class ResepService {
     }
 
     return reseps;
+  }
+
+  async userCheckout(resep_id: number) {
+    let resep = await this.getResep(resep_id);
+    
+    if (resep.status != 'created') {
+      return null;
+    }
+    
+    for (let key in resep?.resep_details) {
+      // Stock Update
+      let details = resep.resep_details;
+      const product_id = details[key as any].product_id;
+      const product = await this.obatsRepository.findOneOrFail({
+        where: {
+          product_id: product_id,
+        },
+      });
+
+      let finalStock = product.stock
+
+      finalStock -= details[key as any].qty
+      this.obatsRepository.update({product_id: product_id }, {stock: finalStock})
+
+      // Status Update
+      this.resepsRepository.update({resep_id: resep_id}, {status: 'confirmed'})
+    }
+
+    return resep;
+  }
+
+  async userCancelCheckout(resep_id: number) {
+    let resep = await this.getResep(resep_id);
+
+    if (resep.status != 'confirmed') {
+      return null;
+    }
+
+    for (let key in resep?.resep_details) {
+      // Stock Update
+      let details = resep.resep_details;
+      const product_id = details[key as any].product_id;
+      const product = await this.obatsRepository.findOneOrFail({
+        where: {
+          product_id: product_id,
+        },
+      });
+
+      let finalStock = product.stock
+
+      finalStock += details[key as any].qty
+      this.obatsRepository.update({product_id: product_id }, {stock: finalStock})
+
+      // Status Update
+      this.resepsRepository.update({resep_id: resep_id}, {status: 'cancelled'})
+    }
+
+    return resep;
   }
 }

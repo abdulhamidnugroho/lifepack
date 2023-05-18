@@ -13,7 +13,7 @@ import { CreateResepDetailDto } from './dto/create-resepdetail.dto';
 import { UpdateResepDetailDto } from './dto/update-resepdetail.dto';
 import { ResepService } from './services/resep.service';
 import { ResepDetailService } from './services/resepdetail.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('resep')
 @Controller('resep')
@@ -127,4 +127,18 @@ export class ResepController {
     };
   }
 
+  @Post('resep/checkout')
+  async userCheckout(@Body() resep_id: number) {
+    let resep = await this.resepService.userCheckout(resep_id);
+
+    if (resep == null) {
+      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+
+    }
+    
+    return {
+      message: 'Checkout Success',
+      resep,
+    };
+  }
 }
